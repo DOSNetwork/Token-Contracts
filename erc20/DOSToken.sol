@@ -34,7 +34,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
         return _approvals[src][guy];
     }
 
-    function transfer(address dst, uint wad) public returns (bool) {
+    function transfer(address dst, uint wad) public stoppable returns (bool) {
         return transferFrom(msg.sender, dst, wad);
     }
 
@@ -75,10 +75,6 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
         return true;
     }
     
-    function mint(uint wad) public {
-        mint(msg.sender, wad);
-    }
-    
     function burn(uint wad) public {
         burn(msg.sender, wad);
     }
@@ -91,11 +87,11 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
     
     function burn(address guy, uint wad) public auth stoppable {
         if (guy != msg.sender && _approvals[guy][msg.sender] != uint(-1)) {
-            require(_approvals[guy][msg.sender] >= wad, "ds-token-insufficient-approval");
+            require(_approvals[guy][msg.sender] >= wad, "token-insufficient-approval");
             _approvals[guy][msg.sender] = sub(_approvals[guy][msg.sender], wad);
         }
 
-        require(_balances[guy] >= wad, "ds-token-insufficient-balance");
+        require(_balances[guy] >= wad, "token-insufficient-balance");
         _balances[guy] = sub(_balances[guy], wad);
         _supply = sub(_supply, wad);
         emit Burn(guy, wad);
