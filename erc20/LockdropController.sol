@@ -1,51 +1,55 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./auth.sol";
+import "./math.sol";
 import "./TokenController.sol";
 
-contract LockdropController is TokenController, DSAuth {
+contract LockdropController is TokenController, DSAuth, DSMath {
+    uint public perNodeLockedAmount = 0;
+    uint private lockedSupply = 0;
     mapping (address => bool) public lockdropList;
-    uint public lockedAmount = 0;
     
-    event UpdateLockedAmount(uint oldAmount, uint newAmount);
+    event UpdatePerNodeLockedAmount(uint oldAmount, uint newAmount);
     event Lock(address indexed node);
     event Release(address indexed node);
     
-    function setLockedAmount(uint amount) public auth {
-        require(amount != lockedAmount);
-        emit UpdateLockedAmount(lockedAmount, amount);
-        lockedAmount = amount;
+    function setPerNodeLockedAmount(uint amount) public auth {
+        require(amount != perNodeLockedAmount);
+        emit UpdatePerNodeLockedAmount(perNodeLockedAmount, amount);
+        perNodeLockedAmount = amount;
     }
     
     function lock(address node) public auth {
         lockdropList[node] = true;
+        lockedSupply = add(lockedSupply, perNodeLockedAmount);
         emit Lock(node);
     }
     
     function release(address node) public auth {
         delete lockdropList[node];
+        lockedSupply = sub(lockedSupply, perNodeLockedAmount);
         emit Release(node);
     }
     
-    /// @notice For address in lockdropList it's only allowed to transfer the amount greater than the lockedAmount.
+    /// @notice For address in lockdropList it's only allowed to transfer the amount greater than the perNodeLockedAmount.
     function onTokenTransfer(address _from, address _to, uint _amount) public returns(uint) {
         if (!lockdropList[_from]) {
             return _amount;
-        } else if (_amount <= lockedAmount) {
+        } else if (_amount <= perNodeLockedAmount) {
             return 0;
         } else {
-            return (lockedAmount - _amount);
+            return (_amount - perNodeLockedAmount);
         }
     }
     
-    /// @notice For address in lockdropList it's only allowed to approve the amount greater than the lockedAmount.
+    /// @notice For address in lockdropList it's only allowed to approve the amount greater than the perNodeLockedAmount.
     function onTokenApprove(address _owner, address _spender, uint _amount) public returns(uint) {
         if (!lockdropList[_owner]) {
             return _amount;
-        } else if (_amount <= lockedAmount) {
+        } else if (_amount <= perNodeLockedAmount) {
             return 0;
         } else {
-            return (lockedAmount - _amount);
+            return (_amount - perNodeLockedAmount);
         }
     }
 }
