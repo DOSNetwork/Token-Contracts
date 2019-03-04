@@ -210,19 +210,19 @@ contract DSStop is DSNote, DSAuth {
 
 
 
-contract Controlled {
-    /// @notice The address of the controller is the only address that can call
+contract Managed {
+    /// @notice The address of the manager is the only address that can call
     ///  a function with this modifier
-    modifier onlyController { require(msg.sender == controller); _; }
+    modifier onlyManager { require(msg.sender == manager); _; }
 
-    address public controller;
+    address public manager;
 
-    constructor() public { controller = msg.sender;}
+    constructor() public { manager = msg.sender;}
 
-    /// @notice Changes the controller of the contract
-    /// @param _newController The new controller of the contract
-    function changeController(address _newController) public onlyController {
-        controller = _newController;
+    /// @notice Changes the manager of the contract
+    /// @param _newManager The new manager of the contract
+    function changeManager(address _newManager) public onlyManager {
+        manager = _newManager;
     }
     
     /// @dev Internal function to determine if an address is a contract
@@ -284,7 +284,7 @@ contract ControllerManager is DSAuth {
 }
 
 
-contract DOSToken is ERC20, DSMath, DSStop, Controlled {
+contract DOSToken is ERC20, DSMath, DSStop, Managed {
     string public constant name = 'DOS Network Token';
     string public constant symbol = 'DOS';
     uint256 public constant decimals = 18;
@@ -292,12 +292,10 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
     
     mapping (address => uint256) _balances;
     mapping (address => mapping (address => uint256))  _approvals;
-
-    event Mint(address indexed guy, uint wad);
-    event Burn(address indexed guy, uint wad);
     
     constructor() public {
         _balances[msg.sender] = _supply;
+        emit Transfer(address(0), msg.sender, _supply);
     }
 
     function totalSupply() public view returns (uint) {
@@ -318,8 +316,8 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
 
     function transferFrom(address src, address dst, uint wad) public stoppable returns (bool) {
         // Adjust token transfer amount if necessary.
-        if (isContract(controller)) {
-            wad = ControllerManager(controller).onTransfer(src, dst, wad);
+        if (isContract(manager)) {
+            wad = ControllerManager(manager).onTransfer(src, dst, wad);
             require(wad > 0, "transfer-disabled-by-ControllerManager");
         }
 
@@ -342,9 +340,9 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
     }
 
     function approve(address guy, uint wad) public stoppable returns (bool) {
-        // Alerts the token controller of the approve function call
-        if (isContract(controller)) {
-            wad = ControllerManager(controller).onApprove(msg.sender, guy, wad);
+        // Adjust token approve amount if necessary.
+        if (isContract(manager)) {
+            wad = ControllerManager(manager).onApprove(msg.sender, guy, wad);
             require(wad > 0, "approve-disabled-by-ControllerManager");
         }
         
@@ -362,7 +360,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
     function mint(address guy, uint wad) public auth stoppable {
         _balances[guy] = add(_balances[guy], wad);
         _supply = add(_supply, wad);
-        emit Mint(guy, wad);
+        emit Transfer(address(0), guy, wad);
     }
     
     function burn(address guy, uint wad) public auth stoppable {
@@ -374,9 +372,12 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
         require(_balances[guy] >= wad, "token-insufficient-balance");
         _balances[guy] = sub(_balances[guy], wad);
         _supply = sub(_supply, wad);
-        emit Burn(guy, wad);
+        emit Transfer(guy, address(0), wad);
     }
     
+    /// @notice Ether sent to this contract won't be returned, thank you.
+    function () external payable {}
+
     /// @notice This method can be used by the owner to extract mistakenly
     ///  sent tokens to this contract.
     /// @param _token The address of the token contract that you want to recover
