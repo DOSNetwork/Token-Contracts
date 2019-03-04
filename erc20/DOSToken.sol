@@ -4,7 +4,7 @@ import "./erc20.sol";
 import "./math.sol";
 import "./stop.sol";
 import "./Controlled.sol";
-import "./TokenController.sol";
+import "./ControllerManager.sol";
 
 contract DOSToken is ERC20, DSMath, DSStop, Controlled {
     string public constant name = 'DOS Network Token';
@@ -34,14 +34,15 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
         return _approvals[src][guy];
     }
 
-    function transfer(address dst, uint wad) public stoppable returns (bool) {
+    function transfer(address dst, uint wad) public returns (bool) {
         return transferFrom(msg.sender, dst, wad);
     }
 
     function transferFrom(address src, address dst, uint wad) public stoppable returns (bool) {
-        // Alerts the token controller of the transfer
+        // Adjust token transfer amount if necessary.
         if (isContract(controller)) {
-            require(TokenController(controller).onTransfer(src, dst, wad) == true, "transfer-disabled-by-TokenController");
+            wad = ControllerManager(controller).onTransfer(src, dst, wad);
+            require(wad > 0, "transfer-disabled-by-ControllerManager");
         }
 
         if (src != msg.sender && _approvals[src][msg.sender] != uint(-1)) {
@@ -65,7 +66,8 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
     function approve(address guy, uint wad) public stoppable returns (bool) {
         // Alerts the token controller of the approve function call
         if (isContract(controller)) {
-            require(TokenController(controller).onApprove(msg.sender, guy, wad), "approve-disabled-by-TokenController");
+            wad = ControllerManager(controller).onApprove(msg.sender, guy, wad);
+            require(wad > 0, "approve-disabled-by-ControllerManager");
         }
         
         _approvals[msg.sender][guy] = wad;
@@ -74,7 +76,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Controlled {
 
         return true;
     }
-    
+
     function burn(uint wad) public {
         burn(msg.sender, wad);
     }
