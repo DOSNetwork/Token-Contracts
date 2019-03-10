@@ -6,7 +6,8 @@ import "./TokenController.sol";
 
 contract LockdropController is TokenController, DSAuth, DSMath {
     uint public perNodeLockedAmount = 0;
-    uint private lockedSupply = 0;
+    uint public lockedSupply = 0;
+    uint public lockedNode = 0;
     mapping (address => bool) public lockdropList;
     
     event UpdatePerNodeLockedAmount(uint oldAmount, uint newAmount);
@@ -17,17 +18,20 @@ contract LockdropController is TokenController, DSAuth, DSMath {
         require(amount != perNodeLockedAmount);
         emit UpdatePerNodeLockedAmount(perNodeLockedAmount, amount);
         perNodeLockedAmount = amount;
+        lockedSupply = mul(perNodeLockedAmount, lockedNode);
     }
     
     function lock(address node) public auth {
         lockdropList[node] = true;
         lockedSupply = add(lockedSupply, perNodeLockedAmount);
+        lockedNode = add(lockedNode, 1);
         emit Lock(node);
     }
     
     function release(address node) public auth {
         delete lockdropList[node];
         lockedSupply = sub(lockedSupply, perNodeLockedAmount);
+        lockedNode = sub(lockedNode, 1);
         emit Release(node);
     }
     
