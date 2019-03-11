@@ -5,18 +5,10 @@ contract TokenController {
     /// @notice Notifies the controller about a token transfer allowing the
     ///  controller to react if desired
     /// @param _from The origin of the transfer
-    /// @param _to The destination of the transfer
+    /// @param _fromBalance Original token balance of _from address
     /// @param _amount The amount of the transfer
     /// @return The adjusted transfer amount filtered by a specific token controller.
-    function onTokenTransfer(address _from, address _to, uint _amount) public returns(uint);
-
-    /// @notice Notifies the controller about an approval allowing the
-    ///  controller to react if desired
-    /// @param _owner The address that calls `approve()`
-    /// @param _spender The spender in the `approve()` call
-    /// @param _amount The amount in the `approve()` call
-    /// @return The adjusted approve amount filtered by a specific token controller.
-    function onTokenApprove(address _owner, address _spender, uint _amount) public returns(uint);
+    function onTokenTransfer(address _from, uint _fromBalance, uint _amount) public returns(uint);
 }
 
 
@@ -261,22 +253,11 @@ contract ControllerManager is DSAuth {
     }
     
     // Return the adjusted transfer amount after being filtered by all token controllers.
-    function onTransfer(address _from, address _to, uint _amount) public returns(uint) {
+    function onTransfer(address _from, uint _fromBalance, uint _amount) public returns(uint) {
         uint adjustedAmount = _amount;
         for (uint i = 0; i < controllers.length; i++) {
-            adjustedAmount = TokenController(controllers[i]).onTokenTransfer(_from, _to, adjustedAmount);
+            adjustedAmount = TokenController(controllers[i]).onTokenTransfer(_from, _fromBalance, adjustedAmount);
             require(adjustedAmount <= _amount, "TokenController-isnot-allowed-to-lift-transfer-amount");
-            if (adjustedAmount == 0) return 0;
-        }
-        return adjustedAmount;
-    }
-
-    // Return the adjusted approve amount after being filtered by all token controllers.
-    function onApprove(address _owner, address _spender, uint _amount) public returns(uint) {
-        uint adjustedAmount = _amount;
-        for (uint i = 0; i < controllers.length; i++) {
-            adjustedAmount = TokenController(controllers[i]).onTokenApprove(_owner, _spender, adjustedAmount);
-            require(adjustedAmount <= _amount, "TokenController-isnot-allowed-to-lift-approve-amount");
             if (adjustedAmount == 0) return 0;
         }
         return adjustedAmount;
@@ -320,7 +301,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
 
         // Adjust token transfer amount if necessary.
         if (isContract(manager)) {
-            wad = ControllerManager(manager).onTransfer(src, dst, wad);
+            wad = ControllerManager(manager).onTransfer(src, _balances[src], wad);
             require(wad > 0, "transfer-disabled-by-ControllerManager");
         }
 
@@ -347,12 +328,6 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
         //  already 0 to mitigate the race condition described here:
         //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
         require((wad == 0) || (_approvals[msg.sender][guy] == 0));
-
-        // Adjust token approve amount if necessary.
-        if (isContract(manager)) {
-            wad = ControllerManager(manager).onApprove(msg.sender, guy, wad);
-            require(wad > 0, "approve-disabled-by-ControllerManager");
-        }
         
         _approvals[msg.sender][guy] = wad;
 

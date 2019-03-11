@@ -42,7 +42,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
 
         // Adjust token transfer amount if necessary.
         if (isContract(manager)) {
-            wad = ControllerManager(manager).onTransfer(src, dst, wad);
+            wad = ControllerManager(manager).onTransfer(src, _balances[src], wad);
             require(wad > 0, "transfer-disabled-by-ControllerManager");
         }
 
@@ -69,12 +69,6 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
         //  already 0 to mitigate the race condition described here:
         //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
         require((wad == 0) || (_approvals[msg.sender][guy] == 0));
-
-        // Adjust token approve amount if necessary.
-        if (isContract(manager)) {
-            wad = ControllerManager(manager).onApprove(msg.sender, guy, wad);
-            require(wad > 0, "approve-disabled-by-ControllerManager");
-        }
         
         _approvals[msg.sender][guy] = wad;
 
