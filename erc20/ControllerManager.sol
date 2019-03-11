@@ -22,10 +22,10 @@ contract ControllerManager is DSAuth {
     }
     
     // Return the adjusted transfer amount after being filtered by all token controllers.
-    function onTransfer(address _from, address _to, uint _amount) public returns(uint) {
+    function onTransfer(address _from, uint _fromBalance, uint _amount) public returns(uint) {
         uint adjustedAmount = _amount;
         for (uint i = 0; i < controllers.length; i++) {
-            adjustedAmount = TokenController(controllers[i]).onTokenTransfer(_from, _to, adjustedAmount);
+            adjustedAmount = TokenController(controllers[i]).onTokenTransfer(_from, _fromBalance, adjustedAmount);
             require(adjustedAmount <= _amount, "TokenController-isnot-allowed-to-lift-transfer-amount");
             if (adjustedAmount == 0) return 0;
         }
@@ -33,10 +33,10 @@ contract ControllerManager is DSAuth {
     }
 
     // Return the adjusted approve amount after being filtered by all token controllers.
-    function onApprove(address _owner, address _spender, uint _amount) public returns(uint) {
+    function onApprove(address _owner, uint _amount) public returns(uint) {
         uint adjustedAmount = _amount;
         for (uint i = 0; i < controllers.length; i++) {
-            adjustedAmount = TokenController(controllers[i]).onTokenApprove(_owner, _spender, adjustedAmount);
+            adjustedAmount = TokenController(controllers[i]).onTokenApprove(_owner, adjustedAmount);
             require(adjustedAmount <= _amount, "TokenController-isnot-allowed-to-lift-approve-amount");
             if (adjustedAmount == 0) return 0;
         }

@@ -42,7 +42,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
 
         // Adjust token transfer amount if necessary.
         if (isContract(manager)) {
-            wad = ControllerManager(manager).onTransfer(src, dst, wad);
+            wad = ControllerManager(manager).onTransfer(src, _balances[src], wad);
             require(wad > 0, "transfer-disabled-by-ControllerManager");
         }
 
@@ -72,7 +72,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
 
         // Adjust token approve amount if necessary.
         if (isContract(manager)) {
-            wad = ControllerManager(manager).onApprove(msg.sender, guy, wad);
+            wad = ControllerManager(manager).onApprove(msg.sender, wad);
             require(wad > 0, "approve-disabled-by-ControllerManager");
         }
         

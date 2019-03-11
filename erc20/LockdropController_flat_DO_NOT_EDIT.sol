@@ -5,18 +5,17 @@ contract TokenController {
     /// @notice Notifies the controller about a token transfer allowing the
     ///  controller to react if desired
     /// @param _from The origin of the transfer
-    /// @param _to The destination of the transfer
+    /// @param _fromBalance Original token balance of _from address
     /// @param _amount The amount of the transfer
     /// @return The adjusted transfer amount filtered by a specific token controller.
-    function onTokenTransfer(address _from, address _to, uint _amount) public returns(uint);
+    function onTokenTransfer(address _from, uint _fromBalance, uint _amount) public returns(uint);
 
     /// @notice Notifies the controller about an approval allowing the
     ///  controller to react if desired
     /// @param _owner The address that calls `approve()`
-    /// @param _spender The spender in the `approve()` call
     /// @param _amount The amount in the `approve()` call
     /// @return The adjusted approve amount filtered by a specific token controller.
-    function onTokenApprove(address _owner, address _spender, uint _amount) public returns(uint);
+    function onTokenApprove(address _owner, uint _amount) public returns(uint);
 }
 
 
@@ -155,8 +154,8 @@ contract LockdropController is TokenController, DSAuth, DSMath {
     mapping (address => bool) public lockdropList;
     
     event UpdatePerNodeLockedAmount(uint oldAmount, uint newAmount);
-    event Lock(address indexed node);
-    event Release(address indexed node);
+    event Lock(address indexed node, uint amount);
+    event Release(address indexed node, uint amount);
     
     function setPerNodeLockedAmount(uint amount) public auth {
         require(amount != perNodeLockedAmount);
@@ -166,32 +165,32 @@ contract LockdropController is TokenController, DSAuth, DSMath {
     }
     
     function lock(address node) public auth {
+        require(!lockdropList[node], "Already in lockdrop list");
         lockdropList[node] = true;
         lockedSupply = add(lockedSupply, perNodeLockedAmount);
         lockedNode = add(lockedNode, 1);
-        emit Lock(node);
+        emit Lock(node, perNodeLockedAmount);
     }
     
     function release(address node) public auth {
+        require(lockdropList[node], "Not in lockdrop list");
         delete lockdropList[node];
         lockedSupply = sub(lockedSupply, perNodeLockedAmount);
         lockedNode = sub(lockedNode, 1);
-        emit Release(node);
+        emit Release(node, perNodeLockedAmount);
     }
     
     /// @notice For address in lockdropList it's only allowed to transfer the amount greater than the perNodeLockedAmount.
-    function onTokenTransfer(address _from, address _to, uint _amount) public returns(uint) {
-        if (!lockdropList[_from]) {
-            return _amount;
-        } else if (_amount <= perNodeLockedAmount) {
+    function onTokenTransfer(address _from, uint _fromBalance, uint _amount) public returns(uint) {
+        if (lockdropList[_from] && add(_amount, perNodeLockedAmount) > _fromBalance) {
             return 0;
         } else {
-            return (_amount - perNodeLockedAmount);
+            return _amount;
         }
     }
     
     /// @notice For address in lockdropList it's only allowed to approve the amount greater than the perNodeLockedAmount.
-    function onTokenApprove(address _owner, address _spender, uint _amount) public returns(uint) {
+    function onTokenApprove(address _owner, uint _amount) public returns(uint) {
         if (!lockdropList[_owner]) {
             return _amount;
         } else if (_amount <= perNodeLockedAmount) {
