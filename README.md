@@ -9,7 +9,7 @@
 #### Components
 - ERC20 DOS token contract
 - ControllerManager contract
-- Lockdrop token controller contract
+- ERC20 [Droplock](https://medium.com/dos-network/introducing-droplock-a-new-model-to-bootstrap-staking-network-3b2c605dd276) token contract
 - Contracts flattened by [solidity-flattener](https://github.com/poanetwork/solidity-flattener)
 
 
