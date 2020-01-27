@@ -194,10 +194,10 @@ contract DropBurnToken is ERC20, DSMath, DSStop {
     string public constant symbol = 'DB';
     // 1 DropBurn token (DB) represents for 10% of staking requirement, DB is non-separable.
     uint256 public constant decimals = 0;
-    // DOS Network is burning 6% of total supply, which is 60,000,000 tokens.
-    // Each DOS node stakes at least 50,000 tokens, with 1 DB stands for 10% of
-    // staking requirement, so we're issuing 12,000 DB tokens.
-    uint256 private constant MAX_SUPPLY = 12000;
+    // DOS Network is burning 5% of total supply, which is 50,000,000 tokens.
+    // Each DOS node stakes at least 100,000 tokens, with 1 DB stands for 10% of
+    // staking requirement, so we're issuing 5,000 DB tokens.
+    uint256 private constant MAX_SUPPLY = 5000;
     uint256 private _supply = MAX_SUPPLY;
     
     mapping (address => uint256) _balances;
