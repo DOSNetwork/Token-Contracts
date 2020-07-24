@@ -1,16 +1,8 @@
+/**
+ *Submitted for verification at Etherscan.io on 2020-07-23
+*/
+
 pragma solidity >=0.5.0 <0.6.0;
-
-/// @dev The token controller contract must implement these functions
-contract TokenController {
-    /// @notice Notifies the controller about a token transfer allowing the
-    ///  controller to react if desired
-    /// @param _from The origin of the transfer
-    /// @param _fromBalance Original token balance of _from address
-    /// @param _amount The amount of the transfer
-    /// @return The adjusted transfer amount filtered by a specific token controller.
-    function onTokenTransfer(address _from, uint _fromBalance, uint _amount) public returns(uint);
-}
-
 
 contract DSAuthority {
     function canCall(
@@ -18,10 +10,12 @@ contract DSAuthority {
     ) public view returns (bool);
 }
 
+
 contract DSAuthEvents {
     event LogSetAuthority (address indexed authority);
     event LogSetOwner     (address indexed owner);
 }
+
 
 contract DSAuth is DSAuthEvents {
     DSAuthority  public  authority;
@@ -109,9 +103,6 @@ contract ERC20 {
 }
 
 
-
-
-
 contract DSMath {
     function add(uint x, uint y) internal pure returns (uint z) {
         require((z = x + y) >= x, "ds-math-add-overflow");
@@ -181,10 +172,6 @@ contract DSMath {
 }
 
 
-
-
-
-
 contract DSStop is DSNote, DSAuth {
     bool public stopped;
 
@@ -199,7 +186,6 @@ contract DSStop is DSNote, DSAuth {
         stopped = false;
     }
 }
-
 
 
 contract Managed {
@@ -230,38 +216,8 @@ contract Managed {
 }
 
 
-
-
-
-
-contract ControllerManager is DSAuth {
-    address[] public controllers;
-    
-    function addController(address _ctrl) public auth {
-        require(_ctrl != address(0));
-        controllers.push(_ctrl);
-    }
-    
-    function removeController(address _ctrl) public auth {
-        for (uint idx = 0; idx < controllers.length; idx++) {
-            if (controllers[idx] == _ctrl) {
-                controllers[idx] = controllers[controllers.length - 1];
-                controllers.length -= 1;
-                return;
-            }
-        }
-    }
-    
-    // Return the adjusted transfer amount after being filtered by all token controllers.
-    function onTransfer(address _from, uint _fromBalance, uint _amount) public returns(uint) {
-        uint adjustedAmount = _amount;
-        for (uint i = 0; i < controllers.length; i++) {
-            adjustedAmount = TokenController(controllers[i]).onTokenTransfer(_from, _fromBalance, adjustedAmount);
-            require(adjustedAmount <= _amount, "TokenController-isnot-allowed-to-lift-transfer-amount");
-            if (adjustedAmount == 0) return 0;
-        }
-        return adjustedAmount;
-    }
+contract ControllerManager {
+    function onTransfer(address _from, address _to, uint _amount) public returns(uint);
 }
 
 
@@ -269,7 +225,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
     string public constant name = 'DOS Network Token';
     string public constant symbol = 'DOS';
     uint256 public constant decimals = 18;
-    uint256 private constant MAX_SUPPLY = 1e9 * 1e18; // 1 billion total supply
+    uint256 private constant MAX_SUPPLY = 95 * 1e7 * 1e18; // 950 million total supply, as 50 million was burnt.
     uint256 private _supply = MAX_SUPPLY;
     
     mapping (address => uint256) _balances;
@@ -299,10 +255,9 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
     function transferFrom(address src, address dst, uint wad) public stoppable returns (bool) {
         require(_balances[src] >= wad, "token-insufficient-balance");
 
-        // Adjust token transfer amount if necessary.
         if (isContract(manager)) {
-            wad = ControllerManager(manager).onTransfer(src, _balances[src], wad);
-            require(wad > 0, "transfer-disabled-by-ControllerManager");
+            wad = ControllerManager(manager).onTransfer(src, dst, wad);
+            if (wad == 0) return false;
         }
 
         if (src != msg.sender && _approvals[src][msg.sender] != uint(-1)) {
@@ -318,21 +273,13 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
         return true;
     }
 
-    function approve(address guy) public stoppable returns (bool) {
+    function approve(address guy) public returns (bool) {
         return approve(guy, uint(-1));
     }
 
     function approve(address guy, uint wad) public stoppable returns (bool) {
-        // To change the approve amount you first have to reduce the addresses`
-        //  allowance to zero by calling `approve(_guy, 0)` if it is not
-        //  already 0 to mitigate the race condition described here:
-        //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-        require((wad == 0) || (_approvals[msg.sender][guy] == 0));
-        
         _approvals[msg.sender][guy] = wad;
-
         emit Approval(msg.sender, guy, wad);
-
         return true;
     }
 
@@ -340,14 +287,7 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
         burn(msg.sender, wad);
     }
     
-    function mint(address guy, uint wad) public auth stoppable {
-        _balances[guy] = add(_balances[guy], wad);
-        _supply = add(_supply, wad);
-        require(_supply <= MAX_SUPPLY, "Total supply overflow");
-        emit Transfer(address(0), guy, wad);
-    }
-    
-    function burn(address guy, uint wad) public auth stoppable {
+    function burn(address guy, uint wad) public stoppable {
         if (guy != msg.sender && _approvals[guy][msg.sender] != uint(-1)) {
             require(_approvals[guy][msg.sender] >= wad, "token-insufficient-approval");
             _approvals[guy][msg.sender] = sub(_approvals[guy][msg.sender], wad);
@@ -359,19 +299,13 @@ contract DOSToken is ERC20, DSMath, DSStop, Managed {
         emit Transfer(guy, address(0), wad);
     }
     
-    /// @notice Ether sent to this contract won't be returned, thank you.
-    function () external payable {}
+    /// @notice Ether sent to this contract will be returned.
+    function () external {}
 
     /// @notice This method can be used by the owner to extract mistakenly
     ///  sent tokens to this contract.
     /// @param _token The address of the token contract that you want to recover
-    ///  set to 0 in case you want to extract ether.
-    function claimTokens(address _token, address payable _dst) public auth {
-        if (_token == address(0)) {
-            _dst.transfer(address(this).balance);
-            return;
-        }
-
+    function rescueTokens(address _token, address _dst) public auth {
         ERC20 token = ERC20(_token);
         uint balance = token.balanceOf(address(this));
         token.transfer(_dst, balance);
