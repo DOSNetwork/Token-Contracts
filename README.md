@@ -2,7 +2,7 @@
 
 ![](https://i.imgur.com/8IVJvtP.png)
 #### Deployed DOS Token Contract Address
-- Ethereum Mainnet: [0x70861e862e1ac0c96f853c8231826e469ead37b1](https://etherscan.io/address/0x70861e862e1ac0c96f853c8231826e469ead37b1)
+- Ethereum Mainnet: [0x0A913beaD80F321E7Ac35285Ee10d9d922659cB7](https://etherscan.io/address/0x0A913beaD80F321E7Ac35285Ee10d9d922659cB7)
 - Ethereum Testnet (Rinkeby): [0x214e79c85744CD2eBBc64dDc0047131496871bEe](https://rinkeby.etherscan.io/address/0x214e79c85744cd2ebbc64ddc0047131496871bee)
 
 
