@@ -8,7 +8,7 @@
 
 ![](https://i.imgur.com/n0krjtC.png)
 #### Deployed DropBurn Contract Address
-- Ethereum Mainnet: [0x68423B3B0769c739D1fe4C398C3d91F0d646424f](https://etherscan.io/address/0x68423B3B0769c739D1fe4C398C3d91F0d646424f)
+- Ethereum Mainnet: 
 - Ethereum Testnet (Rinkeby): [0x9bfE8F5749d90eB4049Ad94CC4De9b6C4C31f822](https://rinkeby.etherscan.io/address/0x9bfe8f5749d90eb4049ad94cc4de9b6c4c31f822)
 
 

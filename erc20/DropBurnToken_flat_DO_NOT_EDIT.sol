@@ -244,16 +244,8 @@ contract DropBurnToken is ERC20, DSMath, DSStop {
     }
 
     function approve(address guy, uint wad) public stoppable returns (bool) {
-        // To change the approve amount you first have to reduce the addresses`
-        // allowance to zero by calling `approve(_guy, 0)` if it is not
-        // already 0 to mitigate the race condition described here:
-        // https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-        require((wad == 0) || (_approvals[msg.sender][guy] == 0));
-        
         _approvals[msg.sender][guy] = wad;
-
         emit Approval(msg.sender, guy, wad);
-
         return true;
     }
 
@@ -261,14 +253,7 @@ contract DropBurnToken is ERC20, DSMath, DSStop {
         burn(msg.sender, wad);
     }
     
-    function mint(address guy, uint wad) public auth stoppable {
-        _balances[guy] = add(_balances[guy], wad);
-        _supply = add(_supply, wad);
-        require(_supply <= MAX_SUPPLY, "Total supply overflow");
-        emit Transfer(address(0), guy, wad);
-    }
-    
-    function burn(address guy, uint wad) public auth stoppable {
+    function burn(address guy, uint wad) public stoppable {
         if (guy != msg.sender && _approvals[guy][msg.sender] != uint(-1)) {
             require(_approvals[guy][msg.sender] >= wad, "token-insufficient-approval");
             _approvals[guy][msg.sender] = sub(_approvals[guy][msg.sender], wad);
@@ -280,19 +265,13 @@ contract DropBurnToken is ERC20, DSMath, DSStop {
         emit Transfer(guy, address(0), wad);
     }
     
-    /// @notice Ether sent to this contract won't be returned, thank you.
-    function () external payable {}
+    /// @notice Ether sent to this contract will be returned.
+    function () external {}
 
     /// @notice This method can be used by the owner to extract mistakenly
     ///  sent tokens to this contract.
     /// @param _token The address of the token contract that you want to recover
-    ///  set to 0 in case you want to extract ether.
-    function claimTokens(address _token, address payable _dst) public auth {
-        if (_token == address(0)) {
-            _dst.transfer(address(this).balance);
-            return;
-        }
-
+    function rescueTokens(address _token, address _dst) public auth {
         ERC20 token = ERC20(_token);
         uint balance = token.balanceOf(address(this));
         token.transfer(_dst, balance);
