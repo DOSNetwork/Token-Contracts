@@ -353,7 +353,7 @@ contract DOSTokenBEP20Burnable is Context, iBEP20, Ownable {
     _name = 'DOS Network Token BEP20';
     _symbol = 'DOS';
     _decimals = 18;
-    _totalSupply = 1 * 10e9 * 10e18; // 1 billion to match with BEP-2 number.
+    _totalSupply = 1 * 1e9 * 1e18; // 1 billion to match with BEP-2 number.
     _balances[msg.sender] = _totalSupply;
 
     emit Transfer(address(0), msg.sender, _totalSupply);
