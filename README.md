@@ -2,14 +2,23 @@
 
 ![](https://i.imgur.com/8IVJvtP.png)
 #### Deployed DOS Token Contract Address
-- Ethereum Mainnet: [0x0A913beaD80F321E7Ac35285Ee10d9d922659cB7](https://etherscan.io/address/0x0A913beaD80F321E7Ac35285Ee10d9d922659cB7)
-- Ethereum Testnet (Rinkeby): [0x214e79c85744CD2eBBc64dDc0047131496871bEe](https://rinkeby.etherscan.io/address/0x214e79c85744cd2ebbc64ddc0047131496871bee)
+- Ethereum Mainnet: https://etherscan.io/address/0x0A913beaD80F321E7Ac35285Ee10d9d922659cB7
+- Ethereum Testnet (Rinkeby): https://rinkeby.etherscan.io/address/0x214e79c85744cd2ebbc64ddc0047131496871bee
+- Binance Smart Chain: https://bscscan.com/address/0xdc0f0a5719c39764b011edd02811bd228296887c
+- Binance Smart Chain Testnet: 
+- Huobi HecoChain:
+- Huobi HecoChain Testnet: https://scan-testnet.hecochain.com/address/0x3bca354b33e0a0ca6487fb51d1150f6e9c0e0e5e
 
 
 ![](https://i.imgur.com/n0krjtC.png)
 #### Deployed DropBurn Contract Address
-- Ethereum Mainnet: [0x9456d6a22c8bdFF613366d51e3d60402cB8cFd8F](https://etherscan.io/address/0x9456d6a22c8bdff613366d51e3d60402cb8cfd8f)
-- Ethereum Testnet (Rinkeby): [0x9bfE8F5749d90eB4049Ad94CC4De9b6C4C31f822](https://rinkeby.etherscan.io/address/0x9bfe8f5749d90eb4049ad94cc4de9b6c4c31f822)
+- Ethereum Mainnet: https://etherscan.io/address/0x9456d6a22c8bdff613366d51e3d60402cb8cfd8f
+- Ethereum Testnet (Rinkeby): https://rinkeby.etherscan.io/address/0x9bfe8f5749d90eb4049ad94cc4de9b6c4c31f822
+- Binance Smart Chain: 
+- Binance Smart Chain Testnet: 
+- Huobi HecoChain:
+- Huobi HecoChain Testnet: https://scan-testnet.hecochain.com/address/0x84c6be700f2db040ed1455ac980538003cda90dd
+
 
 
 #### Components
