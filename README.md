@@ -5,7 +5,7 @@
 - Ethereum Mainnet: https://etherscan.io/address/0x0A913beaD80F321E7Ac35285Ee10d9d922659cB7
 - Ethereum Testnet (Rinkeby): https://rinkeby.etherscan.io/address/0x214e79c85744cd2ebbc64ddc0047131496871bee
 - Binance Smart Chain: https://bscscan.com/address/0xdc0f0a5719c39764b011edd02811bd228296887c
-- Binance Smart Chain Testnet: 
+- Binance Smart Chain Testnet: https://testnet.bscscan.com/address/0x4ecececdcfc068643252b46f86ba1dc30dccb1dd
 - Huobi HecoChain: https://hecoinfo.com/address/0xf50821f0a136a4514d476dc4cc2a731e7728afaf
 - Huobi HecoChain Testnet: https://testnet.hecoinfo.com/address/0x3bca354b33e0a0ca6487fb51d1150f6e9c0e0e5e
 
@@ -14,8 +14,8 @@
 #### Deployed DropBurn Contract Address
 - Ethereum Mainnet: https://etherscan.io/address/0x9456d6a22c8bdff613366d51e3d60402cb8cfd8f
 - Ethereum Testnet (Rinkeby): https://rinkeby.etherscan.io/address/0x9bfe8f5749d90eb4049ad94cc4de9b6c4c31f822
-- Binance Smart Chain: 
-- Binance Smart Chain Testnet: 
+- Binance Smart Chain: https://bscscan.com/address/0x4250a5022c4372e3f16cfa47ac6449c48ec719b6
+- Binance Smart Chain Testnet: https://testnet.bscscan.com/address/0xcef1ee1049903b727cc60d6990cd48567aa7d983
 - Huobi HecoChain: https://hecoinfo.com/address/0x1b7beaa5107ac5fb2e8adcae2b64b0ba1997efd9
 - Huobi HecoChain Testnet: https://testnet.hecoinfo.com/address/0x84c6be700f2db040ed1455ac980538003cda90dd
 
